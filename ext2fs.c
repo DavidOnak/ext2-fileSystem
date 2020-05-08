@@ -94,12 +94,6 @@ static void ext2_destroy(void* private_data) {
  */
 static int ext2_getattr(const char* path, struct stat* stbuf) {
 
-    /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-
     inode_t currInode;
     uint32_t inodeNo = find_file_from_path(volume, path, &currInode);
     if (inodeNo == 0) {
@@ -115,9 +109,7 @@ static int ext2_getattr(const char* path, struct stat* stbuf) {
         stbuf->st_atime = currInode.i_atime; // added last access time
         stbuf->st_mtime = currInode.i_mtime;
         stbuf->st_ctime = currInode.i_ctime;
-        stbuf->st_blocks = currInode.i_blocks; //not 100% sure if this is right but probaly, its how many blocks is allocated for it so im 99percent sure its right
-        //stbuf->st_flags = currInode.i_flags;
-        //stbuf->st_gen = currInode.i_generation;
+        stbuf->st_blocks = currInode.i_blocks;
 
         return 0;
     }
@@ -158,19 +150,10 @@ static int readdir_helper_function(const char* name, uint32_t inode_no, filler_b
 static int ext2_readdir(const char* path, void* buf, fuse_fill_dir_t filler,
     off_t offset, struct fuse_file_info* fi) {
 
-    /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-
     inode_t dirInode;
     dir_entry_t newDirEntry;
     uint16_t firstSize;
     uint32_t dirInodeNo = find_file_from_path(volume, path, &dirInode);
-    //read_file_block(volume, &dirInode, 4, 2, &firstSize);
-      //read_file_block(volume, &dirInode, offset, firstSize, &newDirEntry);
-
 
     if (dirInodeNo == 0) {
         return -ENOENT;
@@ -185,10 +168,6 @@ static int ext2_readdir(const char* path, void* buf, fuse_fill_dir_t filler,
         return 0;
     }
 }
-
-
-
-
 
 /* ext2_open: Function called when a process opens a file in the file
    system.
@@ -216,9 +195,6 @@ static int ext2_open(const char* path, struct fuse_file_info* fi) {
     if (fi->flags & O_WRONLY || fi->flags & O_RDWR)
         return -EACCES;
 
-    /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
       // get inode from file path
     inode_t currInode;
     uint32_t inodeNo = find_file_from_path(volume, path, &currInode);
@@ -252,13 +228,7 @@ static int ext2_open(const char* path, struct fuse_file_info* fi) {
  */
 static int ext2_release(const char* path, struct fuse_file_info* fi) {
 
-    /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-
-      //Function does not need to do anything we did not malloc any memory in ext2_open
+    // Currently function does not need to do anything since no memory was allocated in ext2_open on heap
 
     return 0;
 }
@@ -289,12 +259,6 @@ static int ext2_release(const char* path, struct fuse_file_info* fi) {
 static int ext2_read(const char* path, char* buf, size_t size, off_t offset,
     struct fuse_file_info* fi) {
 
-    /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-
     inode_t currInode;
     read_inode(volume, fi->fh, &currInode);
 
@@ -320,15 +284,6 @@ static int ext2_read(const char* path, char* buf, size_t size, off_t offset,
        -EIO: If there was an I/O error trying to obtain the data.
  */
 static int ext2_readlink(const char* path, char* buf, size_t size) {
-
-    /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-      /* TO BE COMPLETED BY THE STUDENT */
-
-      // check it exists using openex2?
-
 
       // get symbolic from path
     inode_t inode;

@@ -30,10 +30,6 @@
  */
 volume_t* open_volume_file(const char* filename) {
 
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
-
     printf("About to open\n");
 
     // make new pointer
@@ -80,11 +76,7 @@ volume_t* open_volume_file(const char* filename) {
      volume: pointer to volume to be freed.
  */
 void close_volume_file(volume_t* volume) {
-
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
-
+	
       // closes the file
     close(volume->fd);
 
@@ -113,9 +105,6 @@ void close_volume_file(volume_t* volume) {
  */
 ssize_t read_block(volume_t* volume, uint32_t block_no, uint32_t offset, uint32_t size, void* buffer) {
 
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
     return pread(volume->fd, buffer, size, (volume->block_size * block_no) + offset);
 }
 
@@ -136,18 +125,9 @@ ssize_t read_block(volume_t* volume, uint32_t block_no, uint32_t offset, uint32_
  */
 ssize_t read_inode(volume_t* volume, uint32_t inode_no, inode_t* buffer) {
 
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
-
     // determine block group number and index
     int blockGroup = (inode_no - 1) / volume->super.s_inodes_per_group;
     int inodeIndex = (inode_no - 1) % volume->super.s_inodes_per_group;
-
-    //printf("This block group: %d\n", blockGroup);
-    //printf("This inode index: %d\n", inodeIndex);
-
-
 
     return read_block(volume, volume->groups[blockGroup].bg_inode_table, inodeIndex * volume->super.s_inode_size,
         volume->super.s_inode_size, buffer);
@@ -168,16 +148,6 @@ ssize_t read_inode(volume_t* volume, uint32_t inode_no, inode_t* buffer) {
  */
 /*static*/uint32_t read_ind_block_entry(volume_t* volume, uint32_t ind_block_no,
     uint32_t index) {
-
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
-
-    // MAKE SURE TO MAKE STATIC AGAIN AFTER TESTING !!!!
-    //     !!!!!!!!
-    // !!!!!!!!!!!!!!!!!
-    //     !!!!!!!!
-
 
     // MAKE SURE TO MAKE STATIC AGAIN AFTER TESTING !!!!
     //     !!!!!!!!
@@ -212,28 +182,18 @@ ssize_t read_inode(volume_t* volume, uint32_t inode_no, inode_t* buffer) {
  */
 /*static*/ uint32_t get_inode_block_no(volume_t* volume, inode_t* inode, uint64_t block_idx) {
 
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
-
-    // MAKE SURE TO MAKE STATIC AGAIN AFTER TESTING !!!!
-    //     !!!!!!!!
-    // !!!!!!!!!!!!!!!!!
-    //     !!!!!!!!
-
     // MAKE SURE TO MAKE STATIC AGAIN AFTER TESTING !!!!
     //     !!!!!!!!
     // !!!!!!!!!!!!!!!!!
     //     !!!!!!!!
 
     if (block_idx < 12) {
-        //printf("We in the if statement\n");
 
         return inode->i_block[block_idx];
     }
     else if (block_idx < (volume->block_size / 4) + 12) {
 
-        printf("We in the first else if statement\n");
+        //printf("We in the first else if statement\n");
 
         uint32_t newIndex = block_idx - 12;
         uint32_t returnValue = read_ind_block_entry(volume, inode->i_block_1ind, newIndex);
@@ -242,7 +202,7 @@ ssize_t read_inode(volume_t* volume, uint32_t inode_no, inode_t* buffer) {
 
     }
     else if (block_idx < 12 + (((volume->block_size / 4) + 1) * (volume->block_size / 4))) {
-        printf("We in the second else if statement\n");
+        //printf("We in the second else if statement\n");
 
         uint32_t indBlockNo = read_ind_block_entry(volume, inode->i_block_2ind, (block_idx - (volume->block_size / 4) + 12) / (volume->block_size / 4));
 
@@ -252,23 +212,18 @@ ssize_t read_inode(volume_t* volume, uint32_t inode_no, inode_t* buffer) {
     else if (block_idx < (((((volume->block_size / 4) + 1) * (volume->block_size / 4)) + 1) * (volume->block_size / 4) + 12)) {
         // def wanna double check this triple indirect one
 
-        printf("We in the third else if statement\n");
+        //printf("We in the third else if statement\n");
 
 
         uint32_t indBlockNo2 = read_ind_block_entry(volume, inode->i_block_3ind, (block_idx - (12 + ((volume->block_size / 4) + 1) * (volume->block_size / 4))) / ((volume->block_size / 4) * (volume->block_size / 4)));
         uint32_t indBlockNo1 = read_ind_block_entry(volume, indBlockNo2, ((block_idx - (12 + ((volume->block_size / 4) + 1) * (volume->block_size / 4))) % ((volume->block_size / 4) * (volume->block_size / 4))) / (volume->block_size * volume->block_size));
 
-        // especially this line!!
-
         uint32_t initialFactor = ((block_idx - (12 + ((volume->block_size / 4) + 1) * (volume->block_size / 4))) % ((volume->block_size / 4) * (volume->block_size / 4)));
         uint32_t thirdIndirectFactor = initialFactor % (volume->block_size / 4);
 
-
         return read_ind_block_entry(volume, indBlockNo1, thirdIndirectFactor);
-
     }
     else {
-        printf("We messed up\n");
 
         return EXT2_INVALID_BLOCK_NUMBER;
     }
@@ -291,9 +246,6 @@ ssize_t read_inode(volume_t* volume, uint32_t inode_no, inode_t* buffer) {
  */
 ssize_t read_file_block(volume_t* volume, inode_t* inode, uint64_t offset, uint64_t max_size, void* buffer) {
 
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
     // obtain the block number for the read_block function call
     uint64_t blockIndex = (int)(offset / volume->block_size);
     uint32_t blockNo = get_inode_block_no(volume, inode, blockIndex);
@@ -382,9 +334,6 @@ uint32_t follow_directory_entries(volume_t* volume, inode_t* inode, void* contex
     dir_entry_t* buffer,
     int (*f)(const char* name, uint32_t inode_no, void* context)) {
 
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
     dir_entry_t newDirEntry;
     int offset = 0;
     uint16_t firstSize;
@@ -407,7 +356,6 @@ uint32_t follow_directory_entries(volume_t* volume, inode_t* inode, void* contex
             return newDirEntry.de_inode_no;
         }
     }
-    printf("FUCLK! \n");
     return 0;
 }
 
@@ -461,9 +409,6 @@ uint32_t find_file_in_directory(volume_t* volume, inode_t* inode, const char* na
  */
 uint32_t find_file_from_path(volume_t* volume, const char* path, inode_t* dest_inode) {
 
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
-    /* TO BE COMPLETED BY THE STUDENT */
     int nameStart = 1;
     int nameIndex = 1;
 
