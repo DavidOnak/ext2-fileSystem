@@ -30,12 +30,11 @@
  */
 volume_t* open_volume_file(const char* filename) {
 
-    printf("About to open\n");
+    printf("Opening file\n");
 
     // make new pointer
     volume_t* volume = malloc(sizeof(volume_t));
     volume->fd = open(filename, O_RDONLY);
-    printf("We opened\n");
 
     if (volume->fd < 0) {
         return NULL;
@@ -146,13 +145,8 @@ ssize_t read_inode(volume_t* volume, uint32_t inode_no, inode_t* buffer) {
      corresponding entry. In case of error, returns
      EXT2_INVALID_BLOCK_NUMBER.
  */
-/*static*/uint32_t read_ind_block_entry(volume_t* volume, uint32_t ind_block_no,
+static uint32_t read_ind_block_entry(volume_t* volume, uint32_t ind_block_no,
     uint32_t index) {
-
-    // MAKE SURE TO MAKE STATIC AGAIN AFTER TESTING !!!!
-    //     !!!!!!!!
-    // !!!!!!!!!!!!!!!!!
-    //     !!!!!!!!
 
     uint32_t blockNum;
     read_block(volume, ind_block_no, index * 4, 4, &blockNum);
@@ -180,20 +174,13 @@ ssize_t read_inode(volume_t* volume, uint32_t inode_no, inode_t* buffer) {
      sparse files. In case of error, returns
      EXT2_INVALID_BLOCK_NUMBER.
  */
-/*static*/ uint32_t get_inode_block_no(volume_t* volume, inode_t* inode, uint64_t block_idx) {
-
-    // MAKE SURE TO MAKE STATIC AGAIN AFTER TESTING !!!!
-    //     !!!!!!!!
-    // !!!!!!!!!!!!!!!!!
-    //     !!!!!!!!
+static uint32_t get_inode_block_no(volume_t* volume, inode_t* inode, uint64_t block_idx) {
 
     if (block_idx < 12) {
 
         return inode->i_block[block_idx];
     }
     else if (block_idx < (volume->block_size / 4) + 12) {
-
-        //printf("We in the first else if statement\n");
 
         uint32_t newIndex = block_idx - 12;
         uint32_t returnValue = read_ind_block_entry(volume, inode->i_block_1ind, newIndex);
@@ -202,7 +189,6 @@ ssize_t read_inode(volume_t* volume, uint32_t inode_no, inode_t* buffer) {
 
     }
     else if (block_idx < 12 + (((volume->block_size / 4) + 1) * (volume->block_size / 4))) {
-        //printf("We in the second else if statement\n");
 
         uint32_t indBlockNo = read_ind_block_entry(volume, inode->i_block_2ind, (block_idx - (volume->block_size / 4) + 12) / (volume->block_size / 4));
 
@@ -210,10 +196,6 @@ ssize_t read_inode(volume_t* volume, uint32_t inode_no, inode_t* buffer) {
 
     }
     else if (block_idx < (((((volume->block_size / 4) + 1) * (volume->block_size / 4)) + 1) * (volume->block_size / 4) + 12)) {
-        // def wanna double check this triple indirect one
-
-        //printf("We in the third else if statement\n");
-
 
         uint32_t indBlockNo2 = read_ind_block_entry(volume, inode->i_block_3ind, (block_idx - (12 + ((volume->block_size / 4) + 1) * (volume->block_size / 4))) / ((volume->block_size / 4) * (volume->block_size / 4)));
         uint32_t indBlockNo1 = read_ind_block_entry(volume, indBlockNo2, ((block_idx - (12 + ((volume->block_size / 4) + 1) * (volume->block_size / 4))) % ((volume->block_size / 4) * (volume->block_size / 4))) / (volume->block_size * volume->block_size));
@@ -252,16 +234,12 @@ ssize_t read_file_block(volume_t* volume, inode_t* inode, uint64_t offset, uint6
 
     uint32_t blockOffset = offset % (volume->block_size);
 
-    // this was the old line,, doesnt work
-    //uint32_t blockOffset = offset - (blockNo * volume->block_size);
-
     // get size of data to read
     uint32_t size;
     //printf("Block offset: %d\n", blockOffset);
     //printf("Max Size: %d\n", max_size);
 
     if ((volume->block_size - blockOffset) < max_size) {
-        //printf("We inside the if of read_file_block");
         size = volume->block_size - blockOffset;
     }
     else {
@@ -432,7 +410,6 @@ uint32_t find_file_from_path(volume_t* volume, const char* path, inode_t* dest_i
 
     // now that we passed root dir, iterate through string until it is empty
     for (int i = 1; path[i-1] != '\0'; i++) {
-        //printf("Cussing at : %c \n", path[i]);
         if (path[i] == '/' || path[i] == '\0') {
             if (nameStart == nameIndex) {
                 break;
@@ -445,22 +422,17 @@ uint32_t find_file_from_path(volume_t* volume, const char* path, inode_t* dest_i
             currName[nameIndex - nameStart] = '\0';
 
             printf("currName: %s \n", currName);
-            //read_block(volume, volume->groups[0].bg_inode_table, volume->super.s_inode_size, volume->super.s_inode_size, &currInode);
             currInodeNum = find_file_in_directory(volume, &currInode, currName, &currDir);
             printf("Inode NUm: %d \n", currInodeNum);
 
-            //int blockGroup = (currInodeNum - 1) / volume->super.s_inodes_per_group;
-            //int inodeIndex = (currInodeNum - 1) % volume->super.s_inodes_per_group;
             if (currInodeNum == 0) {
                 printf("*********** ERRROR GOT INODE 0 WHICH DOES NOT EXIST! ********************");
                 break;
             }
-            //inode_t paramInode;
             printf("Directory: %s \n", currDir.de_name);
             //printf("BG: %d \n", blockGroup);
             //printf("iI: %d \n", inodeIndex);
             read_inode(volume, currInodeNum, &currInode);
-            //read_block(volume, volume->groups[blockGroup].bg_inode_table, , volume->super.s_inode_size, &currInode);
 
             currName = NULL;
             nameStart = i + 1;
